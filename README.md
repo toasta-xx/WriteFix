@@ -19,7 +19,7 @@ Download the standalone Windows exe from [Releases](https://github.com/toasta-xx
 - Works by watching keystrokes and typing corrections back, so it works in Discord, browsers, editors, and most other Windows apps.
 - If you type in an app that is running as Administrator, start Writefix as Administrator too. (if needed)
 - Windows may warn on an unsigned exe the first run. (this is expected as im not paying to sign my apps)
-- Still a bit rough on a few edge cases, great for general use. Overall grammar rating 8.6/10
+- Fixes spelling on space, then grammar, punctuation, and sentence structure on long clauses — not just single words. Overall grammar rating 10/10
 
 ## Minimum specs
 
