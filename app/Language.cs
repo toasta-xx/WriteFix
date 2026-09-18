@@ -87,6 +87,29 @@ public static class Language
         "a","an","the","to","of","in","on","at","for"
     };
 
+    static readonly Dictionary<string, int> Flex = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["to"] = 1, ["too"] = 1,
+        ["a"] = 2, ["an"] = 2,
+        ["is"] = 3, ["are"] = 3, ["was"] = 3, ["were"] = 3, ["am"] = 3, ["be"] = 3, ["been"] = 3, ["being"] = 3,
+        ["has"] = 4, ["have"] = 4, ["had"] = 4,
+        ["do"] = 5, ["does"] = 5, ["did"] = 5,
+        ["go"] = 6, ["goes"] = 6, ["went"] = 6, ["going"] = 6, ["gone"] = 6,
+        ["see"] = 7, ["sees"] = 7, ["saw"] = 7, ["seen"] = 7, ["seeing"] = 7,
+        ["give"] = 8, ["gives"] = 8, ["gave"] = 8, ["given"] = 8,
+        ["take"] = 9, ["takes"] = 9, ["took"] = 9, ["taken"] = 9,
+        ["come"] = 10, ["comes"] = 10, ["came"] = 10, ["coming"] = 10,
+        ["get"] = 11, ["gets"] = 11, ["got"] = 11, ["getting"] = 11,
+        ["make"] = 12, ["makes"] = 12, ["made"] = 12,
+        ["say"] = 13, ["says"] = 13, ["said"] = 13,
+        ["know"] = 14, ["knows"] = 14, ["knew"] = 14, ["known"] = 14,
+        ["think"] = 15, ["thinks"] = 15, ["thought"] = 15,
+        ["your"] = 16, ["you're"] = 16, ["youre"] = 16,
+        ["their"] = 17, ["they're"] = 17, ["theyre"] = 17, ["there"] = 17,
+        ["its"] = 18, ["it's"] = 18,
+        ["who"] = 19, ["whom"] = 19
+    };
+
     static readonly HashSet<string> Verbs = new(StringComparer.OrdinalIgnoreCase)
     {
         "is","am","are","was","were","be","been","have","has","had","do","does","did","don't","doesn't","can't",
@@ -187,6 +210,10 @@ public static class Language
         text = Regex.Replace(text, @"\b(he|she|it)\s+(don't)\b", m => m.Groups[1].Value + " " + Preserve(m.Groups[2].Value, "doesn't"), RegexOptions.IgnoreCase);
         text = Regex.Replace(text, @"\b(they|we|you)\s+(doesn't)\b", m => m.Groups[1].Value + " " + Preserve(m.Groups[2].Value, "don't"), RegexOptions.IgnoreCase);
         text = Regex.Replace(text, @"\b(I)\s+(are)\b", m => m.Groups[1].Value + " " + Preserve(m.Groups[2].Value, "am"), RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, @"\b(your)\s+(the|a|an)\b", m => Preserve(m.Groups[1].Value, "you're") + " " + m.Groups[2].Value, RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, @"\b(their)\s+(going|coming|running|leaving|trying)\b", m => Preserve(m.Groups[1].Value, "they're") + " " + m.Groups[2].Value, RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, @"\bif I was you\b", m => char.IsUpper(m.Value[0]) ? "If I were you" : "if I were you", RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, @"\bdidn't saw\b", "didn't see", RegexOptions.IgnoreCase);
         return text;
     }
 
@@ -236,7 +263,7 @@ public static class Language
         if (fw.Count == tw.Count)
         {
             for (var i = 0; i < fw.Count; i++)
-                mapped[i] = SpellTwin(fw[i], tw[i]) ? KeepUserCase(fw[i], tw[i]) : fw[i];
+                mapped[i] = ModelTwin(fw[i], tw[i]) ? KeepUserCase(fw[i], tw[i]) : fw[i];
         }
         else
         {
@@ -245,19 +272,19 @@ public static class Language
             {
                 mapped[i] = fw[i];
                 if (j >= tw.Count) continue;
-                if (SpellTwin(fw[i], tw[j]))
+                if (ModelTwin(fw[i], tw[j]))
                 {
                     mapped[i] = KeepUserCase(fw[i], tw[j]);
                     j++;
                     continue;
                 }
-                if (Small.Contains(tw[j]) && j + 1 < tw.Count && SpellTwin(fw[i], tw[j + 1]))
+                if (Small.Contains(tw[j]) && j + 1 < tw.Count && ModelTwin(fw[i], tw[j + 1]))
                 {
                     mapped[i] = tw[j] + " " + KeepUserCase(fw[i], tw[j + 1]);
                     j += 2;
                     continue;
                 }
-                if (j + 1 < tw.Count && SpellTwin(fw[i], tw[j + 1]))
+                if (j + 1 < tw.Count && ModelTwin(fw[i], tw[j + 1]))
                 {
                     j++;
                     mapped[i] = KeepUserCase(fw[i], tw[j]);
@@ -280,13 +307,13 @@ public static class Language
 
     public static string ApplyLastSpell(string text, string fromWord, string modeled)
     {
-        if (fromWord.Length < 3) return text;
+        if (fromWord.Length < 2) return text;
         var cand = WordsOf(TidyPunct(modeled ?? ""));
         if (cand.Count == 0) return text;
         string? hit = null;
         foreach (var w in cand)
         {
-            if (!SpellTwin(fromWord, w)) continue;
+            if (!ModelTwin(fromWord, w)) continue;
             hit = w;
             break;
         }
@@ -417,6 +444,13 @@ public static class Language
         if (!fox.Contains("good")) return "patch godo";
         var cap = GrammarPatch("She dont like apples", "She doesn't like apples.");
         if (!cap.StartsWith("She") || !cap.Contains("doesn't", StringComparison.OrdinalIgnoreCase)) return "patch cap";
+        if (!GrammarPatch("He go to school", "He goes to school").Contains("goes")) return "patch goes";
+        if (!GrammarPatch("to much work", "too much work").Contains("too")) return "patch too";
+        if (!GrammarPatch("Yesterday he go there", "Yesterday he went there").Contains("went")) return "patch went";
+        if (GrammarPatch("your the best", "yours the best").Contains("yours")) return "patch yours";
+        if (!InstantCompleted("your the best ").Contains("you're")) return "your the";
+        if (!InstantCompleted("their going home ").Contains("they're")) return "their going";
+        if (!InstantCompleted("if I was you ").Contains("were")) return "if i was";
         return null;
     }
 
@@ -477,6 +511,34 @@ public static class Language
         var d = Dist(na.ToLowerInvariant(), nb.ToLowerInvariant());
         if (d <= 1) return true;
         return d <= 2 && Math.Min(na.Length, nb.Length) >= 6;
+    }
+
+    static bool ModelTwin(string a, string b)
+    {
+        var na = Bare(a);
+        var nb = Bare(b);
+        if (na.Length == 0 || nb.Length == 0) return false;
+        if (FalsePossessive(na, nb)) return false;
+        if (SpellTwin(a, b)) return true;
+        if (Flex.TryGetValue(na, out var ga) && Flex.TryGetValue(nb, out var gb) && ga == gb) return true;
+        if (Inflect(na, nb)) return true;
+        var (shortw, longw) = na.Length <= nb.Length ? (na, nb) : (nb, na);
+        return shortw.Length >= 2 && longw.StartsWith(shortw, StringComparison.Ordinal) && Dist(na, nb) <= 1;
+    }
+
+    static string Bare(string s) => s.Replace("'", "").Replace("’", "").ToLowerInvariant();
+
+    static bool FalsePossessive(string a, string b) =>
+        (a, b) is ("your", "yours") or ("their", "theirs") or ("her", "hers") or ("our", "ours")
+        or ("yours", "your") or ("theirs", "their") or ("hers", "her") or ("ours", "our");
+
+    static bool Inflect(string a, string b)
+    {
+        if (a.Length < 2 || b.Length < 2) return false;
+        var (shortw, longw) = a.Length <= b.Length ? (a, b) : (b, a);
+        if (!longw.StartsWith(shortw, StringComparison.Ordinal)) return false;
+        var tail = longw[shortw.Length..];
+        return tail is "s" or "es" or "ed" or "ing" or "d" or "en" or "n" or "er" or "est";
     }
 
     static bool SpellTwin(string a, string b)
