@@ -188,7 +188,7 @@ public sealed class Input : IDisposable
             {
                 var modeled = Language.TidyPunct(brain.Revise(shot));
                 var patched = Language.GrammarPatch(shot, modeled);
-                if (last.Length >= 4 && Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
+                if (last.Length >= 2 && Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
                     patched = Language.ApplyLastSpell(patched, last, brain.Revise(last));
                 return patched;
             }
