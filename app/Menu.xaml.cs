@@ -167,7 +167,7 @@ public partial class Menu : Window
                     {
                         var modeled = Writefix.Language.TidyPunct(brain.Revise(slice));
                         var patched = Writefix.Language.GrammarPatch(slice, modeled);
-                        if (last.Length >= 4 && Writefix.Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
+                        if (last.Length >= 2 && Writefix.Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
                             patched = Writefix.Language.ApplyLastSpell(patched, last, brain.Revise(last));
                         return patched;
                     }
