@@ -69,7 +69,7 @@ public sealed class Model : IDisposable
             var src = encOut[0].AsTensor<float>();
             var hidden = new DenseTensor<float>(src.ToArray(), src.Dimensions.ToArray());
             var dec = new List<long> { 0 };
-            var limit = Math.Min(48, Math.Max(12, ids.Length + 8));
+            var limit = Math.Min(128, Math.Max(16, ids.Length + 24));
             for (var step = 0; step < limit; step++)
             {
                 var decTensor = new DenseTensor<long>(dec.ToArray(), [1, dec.Count]);
