@@ -169,10 +169,9 @@ public sealed class Input : IDisposable
             return;
         }
         var head = text[..n];
-        var slice = Language.ModelSlice(head);
-        var last = Language.LastWord(slice);
-        var wc = Language.WordCount(slice);
-        if (slice.Length < 3 || wc < 1 || (wc < 3 && last.Length < 5))
+        var last = Language.LastWord(head);
+        var wc = Language.WordCount(head);
+        if (head.Length < 3 || wc < 1 || (wc < 3 && last.Length < 5))
         {
             IdleListen();
             return;
@@ -181,16 +180,12 @@ public sealed class Input : IDisposable
         _again = false;
         Status?.Invoke("Fixing");
         var brain = Brain;
-        var shot = slice;
+        var shot = head;
         Task.Run(() =>
         {
             try
             {
-                var modeled = Language.TidyPunct(brain.Revise(shot));
-                var patched = Language.GrammarPatch(shot, modeled);
-                if (last.Length >= 2 && Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
-                    patched = Language.ApplyLastSpell(patched, last, brain.Revise(last));
-                return patched;
+                return Language.PatchClauses(shot, s => s.Length >= 3 ? Language.TidyPunct(brain.Revise(s)) : s);
             }
             catch (Exception ex)
             {
@@ -218,7 +213,7 @@ public sealed class Input : IDisposable
                         return;
                     }
                     var now = _buf.ToString();
-                    var i = now.LastIndexOf(shot, StringComparison.Ordinal);
+                    var i = now.IndexOf(shot, StringComparison.Ordinal);
                     if (i < 0)
                     {
                         if (_again)
