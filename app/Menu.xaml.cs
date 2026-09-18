@@ -1,6 +1,8 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Writefix;
 
@@ -19,12 +21,28 @@ public partial class Menu : Window
     {
         _settings = settings;
         InitializeComponent();
+        var mark = LoadMark();
+        if (mark != null)
+        {
+            Icon = mark;
+            BrandMark.Source = mark;
+        }
         Left = settings.Left;
         Top = settings.Top;
         OnBox.IsChecked = settings.Enabled;
         EndBox.IsChecked = settings.AutoEnd || settings.LiveRevisions;
         _boot = false;
         SetLoad("Loading model", 2);
+    }
+
+    static BitmapFrame? LoadMark()
+    {
+        using var stream = typeof(Menu).Assembly.GetManifestResourceStream("writefix.ico");
+        if (stream == null) return null;
+        var copy = new MemoryStream();
+        stream.CopyTo(copy);
+        copy.Position = 0;
+        return BitmapDecoder.Create(copy, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames[0];
     }
 
     double _pct;

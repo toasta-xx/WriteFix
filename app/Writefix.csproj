@@ -27,7 +27,6 @@
     <EmbeddedResource Include="..\Models\decoder.onnx" LogicalName="decoder.onnx" />
     <EmbeddedResource Include="..\Models\tokenizer.json" LogicalName="tokenizer.json" />
     <EmbeddedResource Include="writefix.ico" LogicalName="writefix.ico" />
-    <Resource Include="brand\writefix.png" />
   </ItemGroup>
   <Target Name="DropNativeLibs" AfterTargets="Publish">
     <ItemGroup>
