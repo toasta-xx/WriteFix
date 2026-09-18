@@ -1,0 +1,3 @@
+*.onnx binary
+*.exe binary
+tokenizer.json linguist-generated

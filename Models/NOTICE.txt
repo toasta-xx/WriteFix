@@ -1,0 +1,5 @@
+Grammar model: Unbabel/gec-t5_small (T5-small, 60.5M)
+ONNX INT8 files: TonyRaju/gec-t5-small-coedit-onnx-int8
+License: Apache 2.0
+These weights are embedded into Writefix.exe at publish time.
+Input prefix: "gec: "
