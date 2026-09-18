@@ -17,6 +17,20 @@ Download the standalone Windows exe from [Releases](https://github.com/toasta-xx
 ## Notes
 
 - Works by watching keystrokes and typing corrections back, so it works in Discord, browsers, editors, and most other Windows apps.
-- If you type in an app that is running as Administrator, start Writefix as Administrator too.
-- Windows may warn on an unsigned exe the first time. That is expected until you sign it.
-- Logs: `%AppData%\Writefix\run.txt` and `error.txt`.
+- If you type in an app that is running as Administrator, start Writefix as Administrator too. (if needed)
+- Windows may warn on an unsigned exe the first run. (this is expected as im not paying to sign my apps)
+- Still a bit rough on a few edge cases, great for general use. Overall grammar rating 8.6/10
+
+## Minimum specs
+
+Bare minimum for an okay speed. CPU only — no GPU.
+
+| Requirement | Minimum |
+|---|---|
+| OS | Windows 10 64-bit or later |
+| RAM | 8 GB |
+| CPU | Dual-core, roughly 2015 or newer (Intel Core i3 / Ryzen 3 class) |
+| Disk | About 150 MB free |
+| GPU | Not required |
+
+It uses about 1 GB of RAM while running. 4 GB machines will struggle. A quad-core CPU and an SSD feel better, but they are not required.
