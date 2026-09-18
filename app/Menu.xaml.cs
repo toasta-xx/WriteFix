@@ -25,7 +25,8 @@ public partial class Menu : Window
         if (mark != null)
         {
             Icon = mark;
-            BrandMark.Source = mark;
+            if (FindName("BrandMark") is System.Windows.Controls.Image brand)
+                brand.Source = mark;
         }
         Left = settings.Left;
         Top = settings.Top;
@@ -155,42 +156,38 @@ public partial class Menu : Window
         if (n >= 3 && Brain is { Ready: true })
         {
             var head = live[..n];
-            var slice = Writefix.Language.ModelSlice(head);
-            var last = Writefix.Language.LastWord(slice);
-            var wc = Writefix.Language.WordCount(slice);
-            if (slice.Length >= 3 && wc >= 1 && !(wc < 3 && last.Length < 5))
+            var last = Writefix.Language.LastWord(head);
+            var wc = Writefix.Language.WordCount(head);
+            if (head.Length >= 3 && wc >= 1 && !(wc < 3 && last.Length < 5))
             {
                 var brain = Brain;
+                var shot = head;
                 Task.Run(() =>
                 {
                     try
                     {
-                        var modeled = Writefix.Language.TidyPunct(brain.Revise(slice));
-                        var patched = Writefix.Language.GrammarPatch(slice, modeled);
-                        if (last.Length >= 2 && Writefix.Language.LastWord(patched).Equals(last, StringComparison.Ordinal))
-                            patched = Writefix.Language.ApplyLastSpell(patched, last, brain.Revise(last));
-                        return patched;
+                        return Writefix.Language.PatchClauses(shot, s => s.Length >= 3 ? Writefix.Language.TidyPunct(brain.Revise(s)) : s);
                     }
                     catch (Exception ex)
                     {
                         Log.Write(ex);
-                        return slice;
+                        return shot;
                     }
                 }).ContinueWith(t => Dispatcher.BeginInvoke(() =>
                 {
                     if (t.Status == TaskStatus.RanToCompletion)
                     {
                         var patched = (t.Result ?? "").TrimEnd();
-                        if (patched.Length > 0 && !patched.Equals(slice, StringComparison.Ordinal))
+                        if (patched.Length > 0 && !patched.Equals(shot, StringComparison.Ordinal))
                         {
                             var now = TestBox.Text;
-                            var i = now.LastIndexOf(slice, StringComparison.Ordinal);
+                            var i = now.IndexOf(shot, StringComparison.Ordinal);
                             if (i >= 0)
                             {
-                                var next = now[..i] + patched + now[(i + slice.Length)..];
+                                var next = now[..i] + patched + now[(i + shot.Length)..];
                                 if (next != now)
                                 {
-                                    var before = Writefix.Language.LastWord(slice);
+                                    var before = Writefix.Language.LastWord(shot);
                                     var after = Writefix.Language.LastWord(patched);
                                     WriteTest(next, before != after ? $"{before} → {after}" : "Grammar");
                                 }
